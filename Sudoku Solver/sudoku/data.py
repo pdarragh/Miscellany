@@ -13,14 +13,27 @@ class Square(object):
         else:
             return '_'
 
+class Row(list):
+    def __init__(self, dimension):
+        self.dimension = dimension
+        for i in xrange(self.dimension):
+            self.append(Square())
+    def __setitem__(self, key, value):
+        if value <= 0 or value > self.dimension:
+            raise ValueError("value out of valid range")
+        self[key].value = value
+
 class Board(object):
     def __init__(self, width=3, height=3):
         self.width      = width
         self.height     = height
         self.dimension  = width * height
-        self.squares    = [[Square()] * self.dimension] * self.dimension
+        self.squares    = [Row(self.dimension)] * self.dimension
+    def __getitem__(self, key):
+        print("key: {}".format(key))
+        return self.squares[key]
     def __repr__(self):
-        result = ""
+        result = "{} {}\n".format(self.width, self.height)
         for y in xrange(self.dimension):
             row = ' '.join([repr(x) for x in self.squares[y]])
             result += row + '\n'
@@ -37,6 +50,6 @@ class Board(object):
             # row = ' '.join([str(x) for x in self.squares[y]])
             result += row + '\n'
             if (y + 1) % self.height == 0 and (y + 1) != self.dimension:
-                result += '+'.join(['-' * (self.height * (self.height - 1) + 1)] * self.width)
+                result += '+'.join(['-' * (self.width * 2 + 1)] * self.height)
                 result += '\n'
         return result
