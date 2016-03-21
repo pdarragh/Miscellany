@@ -33,7 +33,7 @@ def standard_env():
         'number?'   : lambda x: (isinstance(x, int) or isinstance(x, float)),
         'procedure?': callable,
         'round'     : round,
-        'symbole?'  : lambda x: isinstance(x, str),
+        'symbol?'   : lambda x: isinstance(x, str),
     })
     return env
 
