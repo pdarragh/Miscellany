@@ -16,6 +16,7 @@ data LispVal
     | Number Integer
     | String String
     | Bool Bool
+instance Show LispVal where show = showVal
 
 symbol :: Parser Char
 symbol = oneOf "!$%&|*+-/:<=?>@^_~#"
@@ -25,8 +26,20 @@ spaces = skipMany1 space
 
 readExpr :: String -> String
 readExpr input = case parse parseExpr "lisp" input of
-    Left err -> "No match: " ++ show err
-    Right _  -> "Found value"
+    Left err  -> "No match: " ++ show err
+    Right val -> "Found " ++ show val
+
+showVal :: LispVal -> String
+showVal (String contents) = "\"" ++ contents ++ "\""
+showVal (Atom name) = name
+showVal (Number contents) = show contents
+showVal (Bool True) = "#t"
+showVal (Bool False) = "#f"
+showVal (List contents) = "(" ++ unwordsList contents ++ ")"
+showVal (DottedList first rest) = "(" ++ unwordsList first ++ " . " ++ showVal rest ++ ")"
+
+unwordsList :: [LispVal] -> String
+unwordsList = unwords . map showVal
 
 parseExpr :: Parser LispVal
 parseExpr = parseAtom
