@@ -24,6 +24,7 @@ def standard_env():
         'eq?'       : op.is_,
         'equal?'    : op.eq,
         'list'      : lambda *x: list(x),
+        'empty'     : list(),
         'list?'     : lambda x: isinstance(x, list),
         'map'       : map,
         'max'       : max,
@@ -69,7 +70,7 @@ def atomize(token):
         except ValueError:
             return str(token)
 
-def eval(x, env=global_env):
+def evaluate(x, env=global_env):
     if isinstance(x, str):
         return env[x]
     elif not isinstance(x, list):
@@ -79,21 +80,32 @@ def eval(x, env=global_env):
         return exp
     elif x[0] == 'if':
         (_, test, true_branch, false_branch) = x
-        exp = (true_branch if eval(test, env) else false_branch)
-        return eval(exp, env)
+        exp = (true_branch if evaluate(test, env) else false_branch)
+        return evaluate(exp, env)
     elif x[0] == 'define':
         (_, var, exp) = x
-        env[var] = eval(exp, env)
+        env[var] = evaluate(exp, env)
+        return "{} = {}".format(var, env[var])
     else:
-        proc = eval(x[0], env)
-        args = [eval(arg, env) for arg in x[1:]]
+        proc = evaluate(x[0], env)
+        args = [evaluate(arg, env) for arg in x[1:]]
         return proc(*args)
 
 def repl(prompt="lis.py> "):
     while True:
-        val = eval(parse(raw_input(prompt)))
-        if val is not None:
-            print(schemestr(val))
+        try:
+            user_input = raw_input(prompt)
+            if not user_input:
+                continue
+            print(schemestr(evaluate(parse(user_input))))
+        except KeyboardInterrupt:
+            print
+            break
+        except EOFError:
+            print
+            break
+        except Exception as e:
+            print(e.message)
 
 def schemestr(exp):
     if isinstance(exp, list):
@@ -102,4 +114,5 @@ def schemestr(exp):
         return str(exp)
 
 if __name__ == '__main__':
+    import readline
     repl()
